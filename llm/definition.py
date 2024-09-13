@@ -2,13 +2,16 @@ import openai
 import streamlit as st
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-from parser.customJSONParser import JSONParser, JSONParserHint
-from langchain.prompts import PromptTemplate
+from parser.customJSONParser import JSONParser
 from pydantic import ValidationError
 from llm.promptTemplates import (
     answer_checking_prompt_gemini,
     answer_checking_prompt_openai,
+    hint_generation_prompt_gemini,
+    hint_generation_prompt_openai,
 )
+
+from parser.customStrParser import CustomStrOutputParser
 
 # Initialize API keys
 openai.api_key = st.secrets["openai"]
@@ -40,11 +43,7 @@ def create_judge_chain(model_class, model_name, api_key, prompt, variables) -> s
             top_p=1,
             frequency_penalty=0,
             presence_penalty=0,
-            model_kwargs={
-                "response_format": {
-                    "type": "json_object"
-                }  # Include response_format here
-            },
+            model_kwargs={"response_format": {"type": "json_object"}},
         )
 
     chain = prompt | model | JSONParser
@@ -72,16 +71,56 @@ def create_judge_chain(model_class, model_name, api_key, prompt, variables) -> s
 
 
 # Reusable function to create the chain
-def create_hint_chain(
-    model_class, model_name, api_key, temperature, prompt, variables
-) -> str:
-    model = model_class(model=model_name, api_key=api_key, temperature=temperature)
+def create_hint_chain(model_class, model_name, api_key, prompt, variables) -> str:
+    if model_class == ChatGoogleGenerativeAI:
+        generation_config = {
+            "temperature": 1,
+            "top_p": 0.95,
+            "top_k": 64,
+            "max_output_tokens": 8192,
+            "response_mime_type": "text/plain",
+        }
+        model = model_class(
+            model=model_name,
+            api_key=api_key,
+            model_kwargs=generation_config,
+        )
+    else:
 
-    chain = prompt | model | JSONParserHint
-    # Pass the variables to the chain
-    response = chain.invoke(variables)
+        model = model_class(
+            model=model_name,
+            api_key=api_key,
+            temperature=1,
+            max_tokens=2048,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0,
+            response_format={"type": "text"},
+        )
 
-    return response
+    chain = prompt | model | CustomStrOutputParser()
+    # | StrOutputParser
+
+    try:
+        # Pass the variables to the chain
+        response = chain.invoke(variables)
+        print("haha1")
+
+        # Return the filtered result
+        return response
+
+    except ValidationError as e:
+        # Handle cases where the output is not valid or missing keys
+        print("haha2")
+        return {
+            "error": "Invalid output. Required a string as the output",
+            "details": str(e),
+        }
+
+    except Exception as e:
+        # Catch other potential errors
+        print("haha3")
+        return {"error": "An unexpected error occurred.", "details": str(e)}
 
 
 # Functions for Gemini LLM
@@ -101,20 +140,20 @@ def judge_gemini_chain(prompt, riddle) -> str:
     )
 
 
-def hint_gemini_chain(prompt, riddle, hint) -> str:
+def hint_gemini_chain(prompt, riddle, hint, turn, reasoning) -> str:
     variables = {
         "question": riddle["question"],
         "correct_answer": riddle["correct_answer"],
-        "hint_hisotry": hint,
+        "hint_history": hint,
         "user_answer": riddle["user_answer"],
-        "output_instruction": JSONParserHint.get_format_instructions(),
+        "turn": turn,
+        "reasoning": reasoning,
     }
 
     return create_hint_chain(
         model_class=ChatGoogleGenerativeAI,
         model_name="gemini-1.5-pro",
         api_key=gemini_api_key,
-        temperature=0,
         prompt=prompt,
         variables=variables,
     )
@@ -137,34 +176,55 @@ def judge_openai_chain(prompt, riddle) -> str:
     )
 
 
-def hint_openai_chain(prompt, riddle, hint) -> str:
+def hint_openai_chain(prompt, riddle, hint, turn, reasoning) -> str:
 
     variables = {
         "question": riddle["question"],
         "correct_answer": riddle["correct_answer"],
-        "hint_hisotry": hint,
+        "hint_history": hint,
         "user_answer": riddle["user_answer"],
-        "output_instruction": JSONParserHint.get_format_instructions(),
+        "turn": turn,
+        "reasoning": reasoning,
     }
 
     return create_hint_chain(
         model_class=ChatOpenAI,
         model_name="gpt-4o-mini",
         api_key=openai.api_key,
-        temperature=0.5,
         prompt=prompt,
         variables=variables,
     )
 
 
+# Code for modular test
 if __name__ == "__main__":
     riddle = {
         "question": "からしはからしでも冷たいからしは？",
         "correct_answer": "木枯らし",
         "user_answer": "わさび",
     }
+    variables = {
+        "question": "からしはからしでも冷たいからしは？",
+        "correct_answer": "木枯らし",
+        "user_answer": "わさび",
+    }
+    turn = (0,)
+    reasoning = (
+        "このなぞなぞ問題は「○○は○○でも～」のパターンです。「からしはからしでも冷たいからしは？」という 問いに対して、正解は「木枯らし」です。ここでの「からし」は「辛子」と「木枯らし」の言葉遊びを利用しています。ユーザーの答え「わさび」 は辛い調味料ですが、問題の意図である「冷たいからし」という表現には合致していません。したがって、ユーザーの答えは正解とは言えません。",
+    )
+    hint_history = []
     gpt = judge_openai_chain(answer_checking_prompt_openai, riddle)
     gemini = judge_gemini_chain(answer_checking_prompt_gemini, riddle)
 
     print(gpt)
     print(gemini)
+
+    hint_g = hint_gemini_chain(
+        hint_generation_prompt_gemini, variables, hint_history, turn, reasoning
+    )
+    hint_o = hint_openai_chain(
+        hint_generation_prompt_openai, variables, hint_history, turn, reasoning
+    )
+
+    print(hint_g)
+    print(hint_o)

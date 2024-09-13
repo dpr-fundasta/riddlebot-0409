@@ -437,7 +437,7 @@ hint_generation_prompt_openai = PromptTemplate(
     input_variables=[
         "question",
         "correct_answer",
-        "hint_hisotry",
+        "hint_history",
         "user_answer",
         "reasoning",
         "turn",
@@ -515,7 +515,7 @@ hint_generation_prompt_gemini = PromptTemplate(
     input_variables=[
         "question",
         "correct_answer",
-        "hint_hisotry",
+        "hint_history",
         "user_answer",
         "reasoning",
         "turn",

@@ -12,10 +12,10 @@ class CheckOutput(BaseModel):
 JSONParser = JsonOutputParser(pydantic_object=CheckOutput)
 
 
-class CheckOutputForHint(BaseModel):
-    hint: str = Field(description="It should be a description")
-    reason: str = Field(description="Explain the reason for the hint shortly")
+# class CheckOutputForHint(BaseModel):
+#     hint: str = Field(description="It should be a description")
+#     reason: str = Field(description="Explain the reason for the hint shortly")
 
 
-# Initialize JSONParser using CheckOutput
-JSONParserHint = JsonOutputParser(pydantic_object=CheckOutputForHint)
+# # Initialize JSONParser using CheckOutput
+# JSONParserHint = JsonOutputParser(pydantic_object=CheckOutputForHint)

@@ -32,6 +32,8 @@ def initialize_session_state():
         st.session_state.hint_history = []
     if "text_input" not in st.session_state:  # my code
         st.session_state.text_input = ""
+    if "reasoning" not in st.session_state:  # my code
+        st.session_state.reasoning = ""
 
 
 # Initialize session state on first load
@@ -142,6 +144,7 @@ if send_button and user_answer:
 
     result = response["result"]
     reasoning = response["reasoning"]
+    st.session_state.reasoning = reasoning
 
     if result.lower() == "correct":
         st.session_state.acount += 1
@@ -153,23 +156,25 @@ if send_button and user_answer:
         st.error("❌ 不正解です。ヒントをお教えします。")
 
         if model == "ChatGPT":
-            hint_response = hint_openai_chain(
+            hint = hint_openai_chain(
                 hint_generation_prompt_openai,
                 st.session_state.riddle_data,
                 st.session_state.hint_history,
+                len(st.session_state.hint_history),
+                reasoning,
             )
         else:
-            hint_response = hint_gemini_chain(
+            hint = hint_gemini_chain(
                 hint_generation_prompt_gemini,
                 st.session_state.riddle_data,
                 st.session_state.hint_history,
+                len(st.session_state.hint_history),
+                reasoning,
             )
-
-        hint = hint_response["hint"]
 
         st.session_state.hint_history.append(hint)
 
-        st.error(hint_response["hint"])
+        st.error(hint)
 
     # Clear the text input box after submission
     st.session_state["text_input"] = ""
