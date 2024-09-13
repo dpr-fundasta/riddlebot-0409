@@ -21,11 +21,11 @@ st.write(st.session_state.riddle_data)
 st.write("History")
 st.write(st.session_state.hint_history)
 st.write("Reasoning")
-try:
+# try:
 
-    st.write(reasoning)
-except AttributeError:
-    st.write("reasoning not set")
+#     st.write(reasoning)
+# except AttributeError:
+#     st.write("reasoning not set")
 
 
 # import streamlit as st
