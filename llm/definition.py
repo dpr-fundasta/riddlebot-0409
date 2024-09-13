@@ -2,10 +2,13 @@ import openai
 import streamlit as st
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-from parsers.customJSONParser import JSONParser, JSONParserHint, CheckOutput
+from parser.customJSONParser import JSONParser, JSONParserHint
 from langchain.prompts import PromptTemplate
 from pydantic import ValidationError
-from promptTemplates import answer_checking_prompt_gemini, answer_checking_prompt_openai
+from llm.promptTemplates import (
+    answer_checking_prompt_gemini,
+    answer_checking_prompt_openai,
+)
 
 # Initialize API keys
 openai.api_key = st.secrets["openai"]
@@ -22,33 +25,38 @@ def create_judge_chain(model_class, model_name, api_key, prompt, variables) -> s
             "max_output_tokens": 8192,
             "response_mime_type": "application/json",
         }
+        model = model_class(
+            model=model_name,
+            api_key=api_key,
+            model_kwargs=generation_config,
+        )
     else:
-        generation_config = {
-            "temperature": 0,
-            "max_tokens": 1611,
-            "top_p": 1,
-            "frequency_penalty": 0,
-            "presence_penalty": 0,
-            "response_format": {"type": "json_object"},
-        }
 
-    model = model_class(
-        model=model_name,
-        api_key=api_key,
-        generation_config=generation_config,
-    )
+        model = model_class(
+            model=model_name,
+            api_key=api_key,
+            temperature=0,
+            max_tokens=1611,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0,
+            model_kwargs={
+                "response_format": {
+                    "type": "json_object"
+                }  # Include response_format here
+            },
+        )
 
     chain = prompt | model | JSONParser
 
     try:
         # Pass the variables to the chain
         response = chain.invoke(variables)
-        parsed_response = CheckOutput.parse_raw(response)
 
         # Return the filtered result
         return {
-            "result": parsed_response.結果,
-            "reasoning": parsed_response.解説,
+            "result": response["結果"],
+            "reasoning": response["解説"],
         }
 
     except ValidationError as e:
@@ -86,9 +94,9 @@ def judge_gemini_chain(prompt, riddle) -> str:
 
     return create_judge_chain(
         model_class=ChatGoogleGenerativeAI,
-        model_name="gemini-1.5-flash",
+        model_name="gemini-1.5-pro",
         api_key=gemini_api_key,
-        prompt=prompt,
+        prompt=answer_checking_prompt_gemini,
         variables=variables,
     )
 
@@ -104,7 +112,7 @@ def hint_gemini_chain(prompt, riddle, hint) -> str:
 
     return create_hint_chain(
         model_class=ChatGoogleGenerativeAI,
-        model_name="gemini-1.5-flash",
+        model_name="gemini-1.5-pro",
         api_key=gemini_api_key,
         temperature=0,
         prompt=prompt,
@@ -124,8 +132,7 @@ def judge_openai_chain(prompt, riddle) -> str:
         model_class=ChatOpenAI,
         model_name="gpt-4o-mini",
         api_key=openai.api_key,
-        temperature=0,
-        prompt=prompt,
+        prompt=answer_checking_prompt_openai,
         variables=variables,
     )
 
@@ -151,7 +158,11 @@ def hint_openai_chain(prompt, riddle, hint) -> str:
 
 
 if __name__ == "__main__":
-    riddle = {"question": "からしはからしでも冷たいからしは？", "answer": "木枯らし"}
+    riddle = {
+        "question": "からしはからしでも冷たいからしは？",
+        "correct_answer": "木枯らし",
+        "user_answer": "わさび",
+    }
     gpt = judge_openai_chain(answer_checking_prompt_openai, riddle)
     gemini = judge_gemini_chain(answer_checking_prompt_gemini, riddle)
 
