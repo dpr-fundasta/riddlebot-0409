@@ -104,14 +104,12 @@ def create_hint_chain(model_class, model_name, api_key, prompt, variables) -> st
     try:
         # Pass the variables to the chain
         response = chain.invoke(variables)
-        print("haha1")
 
         # Return the filtered result
         return response
 
     except ValidationError as e:
         # Handle cases where the output is not valid or missing keys
-        print("haha2")
         return {
             "error": "Invalid output. Required a string as the output",
             "details": str(e),
@@ -119,7 +117,6 @@ def create_hint_chain(model_class, model_name, api_key, prompt, variables) -> st
 
     except Exception as e:
         # Catch other potential errors
-        print("haha3")
         return {"error": "An unexpected error occurred.", "details": str(e)}
 
 
@@ -131,13 +128,22 @@ def judge_gemini_chain(prompt, riddle) -> str:
         "user_answer": riddle["user_answer"],
     }
 
-    return create_judge_chain(
-        model_class=ChatGoogleGenerativeAI,
-        model_name="gemini-1.5-pro",
-        api_key=gemini_api_key,
-        prompt=answer_checking_prompt_gemini,
-        variables=variables,
-    )
+    try:
+        return create_judge_chain(
+            model_class=ChatGoogleGenerativeAI,
+            model_name="gemini-1.5-pro",
+            api_key=gemini_api_key,
+            prompt=prompt,
+            variables=variables,
+        )
+    except:
+        return create_judge_chain(
+            model_class=ChatGoogleGenerativeAI,
+            model_name="gemini-1.5-flash",
+            api_key=gemini_api_key,
+            prompt=prompt,
+            variables=variables,
+        )
 
 
 def hint_gemini_chain(prompt, riddle, hint, turn, reasoning) -> str:
@@ -149,14 +155,22 @@ def hint_gemini_chain(prompt, riddle, hint, turn, reasoning) -> str:
         "turn": turn,
         "reasoning": reasoning,
     }
-
-    return create_hint_chain(
-        model_class=ChatGoogleGenerativeAI,
-        model_name="gemini-1.5-pro",
-        api_key=gemini_api_key,
-        prompt=prompt,
-        variables=variables,
-    )
+    try:
+        return create_hint_chain(
+            model_class=ChatGoogleGenerativeAI,
+            model_name="gemini-1.5-pro",
+            api_key=gemini_api_key,
+            prompt=prompt,
+            variables=variables,
+        )
+    except:
+        return create_judge_chain(
+            model_class=ChatGoogleGenerativeAI,
+            model_name="gemini-1.5-flash",
+            api_key=gemini_api_key,
+            prompt=prompt,
+            variables=variables,
+        )
 
 
 # Functions for OpenAI LLM
@@ -171,7 +185,7 @@ def judge_openai_chain(prompt, riddle) -> str:
         model_class=ChatOpenAI,
         model_name="gpt-4o-mini",
         api_key=openai.api_key,
-        prompt=answer_checking_prompt_openai,
+        prompt=prompt,
         variables=variables,
     )
 
@@ -203,28 +217,21 @@ if __name__ == "__main__":
         "correct_answer": "木枯らし",
         "user_answer": "わさび",
     }
-    variables = {
-        "question": "からしはからしでも冷たいからしは？",
-        "correct_answer": "木枯らし",
-        "user_answer": "わさび",
-    }
-    turn = (0,)
-    reasoning = (
-        "このなぞなぞ問題は「○○は○○でも～」のパターンです。「からしはからしでも冷たいからしは？」という 問いに対して、正解は「木枯らし」です。ここでの「からし」は「辛子」と「木枯らし」の言葉遊びを利用しています。ユーザーの答え「わさび」 は辛い調味料ですが、問題の意図である「冷たいからし」という表現には合致していません。したがって、ユーザーの答えは正解とは言えません。",
-    )
+    turn = 0
     hint_history = []
-    gpt = judge_openai_chain(answer_checking_prompt_openai, riddle)
+
+    # gpt = judge_openai_chain(answer_checking_prompt_openai, riddle)
+    # print(gpt)
+    # reasoning = gpt["reasoning"]
+    # hint_o = hint_openai_chain(
+    #     hint_generation_prompt_openai, riddle, hint_history, turn, reasoning
+    # )
+    # print(hint_o)
+
     gemini = judge_gemini_chain(answer_checking_prompt_gemini, riddle)
-
-    print(gpt)
     print(gemini)
-
+    reasoning = gemini["reasoning"]
     hint_g = hint_gemini_chain(
-        hint_generation_prompt_gemini, variables, hint_history, turn, reasoning
+        hint_generation_prompt_gemini, riddle, hint_history, turn, reasoning
     )
-    hint_o = hint_openai_chain(
-        hint_generation_prompt_openai, variables, hint_history, turn, reasoning
-    )
-
     print(hint_g)
-    print(hint_o)
