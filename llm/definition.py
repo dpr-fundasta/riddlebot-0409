@@ -12,6 +12,8 @@ from llm.promptTemplates import (
 )
 
 from parser.customStrParser import CustomStrOutputParser
+from requests.exceptions import HTTPError
+
 
 # Initialize API keys
 openai.api_key = st.secrets["openai"]
@@ -52,6 +54,9 @@ def create_judge_chain(model_class, model_name, api_key, prompt, variables) -> s
         # Pass the variables to the chain
         response = chain.invoke(variables)
 
+        if "結果" not in response or "解説" not in response:
+            raise KeyError("Missing required keys '結果' and/or '解説' in response")
+
         # Return the filtered result
         return {
             "result": response["結果"],
@@ -60,14 +65,24 @@ def create_judge_chain(model_class, model_name, api_key, prompt, variables) -> s
 
     except ValidationError as e:
         # Handle cases where the output is not valid or missing keys
+        st.session_state.error = e
         return {
             "error": "Invalid output. Required keys '結果' and '解説' are missing or incorrect format.",
             "details": str(e),
         }
 
     except Exception as e:
+        st.session_state.error = e
         # Catch other potential errors
         return {"error": "An unexpected error occurred.", "details": str(e)}
+
+    except KeyError as e:
+        st.session_state.error = e
+        # Explicitly catch missing keys
+        return {
+            "error": "Missing keys in the response.",
+            "details": str(e),
+        }
 
 
 # Reusable function to create the chain
@@ -107,6 +122,12 @@ def create_hint_chain(model_class, model_name, api_key, prompt, variables) -> st
 
         # Return the filtered result
         return response
+    except HTTPError as http_err:
+        # Specifically catch HTTP-related errors, such as 500 Internal Server Error
+        return {
+            "error": "HTTP error occurred.",
+            "details": f"HTTPError: {str(http_err)}",
+        }
 
     except ValidationError as e:
         # Handle cases where the output is not valid or missing keys

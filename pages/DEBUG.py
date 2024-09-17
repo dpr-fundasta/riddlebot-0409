@@ -17,3 +17,7 @@ st.write("Reasoning of the judgement")
 st.write(st.session_state.reasoning)
 st.write("History")
 st.write(st.session_state.hint_history)
+
+if st.session_state.error != "":
+    st.write("Error Message")
+    st.write(st.session_state.error)

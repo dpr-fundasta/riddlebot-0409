@@ -34,6 +34,8 @@ def initialize_session_state():
         st.session_state.text_input = ""
     if "reasoning" not in st.session_state:  # my code
         st.session_state.reasoning = ""
+    if "error" not in st.session_state:  # my code
+        st.session_state.error = ""
 
 
 # Initialize session state on first load
@@ -145,6 +147,7 @@ if send_button and user_answer:
     result = response["result"]
     reasoning = response["reasoning"]
     st.session_state.reasoning = reasoning
+    turn = min(len(st.session_state.hint_history), 2)
 
     if result.lower() == "correct":
         st.session_state.acount += 1
@@ -154,13 +157,12 @@ if send_button and user_answer:
 
     else:
         st.error("❌ 不正解です。ヒントをお教えします。")
-
         if model == "ChatGPT":
             hint = hint_openai_chain(
                 hint_generation_prompt_openai,
                 st.session_state.riddle_data,
                 st.session_state.hint_history,
-                len(st.session_state.hint_history),
+                turn,
                 reasoning,
             )
         else:
@@ -168,7 +170,7 @@ if send_button and user_answer:
                 hint_generation_prompt_gemini,
                 st.session_state.riddle_data,
                 st.session_state.hint_history,
-                len(st.session_state.hint_history),
+                turn,
                 reasoning,
             )
 
