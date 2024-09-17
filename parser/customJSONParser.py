@@ -17,26 +17,39 @@ class CustomJsonParser(JsonOutputParser):
 
         try:
             parsed = json.loads(cleaned_output)
+            result = {"結果": parsed.get("結果", ""), "解説": parsed.get("解説", "")}
+            validated_output = CheckOutput(**result)
+            return validated_output.dict()
+
         except json.JsonDecodeError as e:
             st.session_state.error = e
             raise ValueError(f"Failed to parse JSON: {e}")
 
-        try:
-            validated_output = self.pydantic_object(**parsed)
         except ValidationError as e:
             st.session_state.error = e
             raise ValueError(f"JSON Validation failed: {e}")
-        return validated_output.dict()
 
+    def clean_output(self, output: str) -> str:
+        # Remove markdown code block syntax
+        output = re.sub(r"```json|```", "", output)
 
-def clean_output(self, output: str) -> str:
-    try:
-        fixed = output.replace("\\\n", "").replace("\n", "")
-        cleaned = re.sub(r"[\\\n\r\t]", "", fixed)
-        return cleaned
-    except Exception as e:
-        st.session_state.error = e
-        raise ValueError(f"Error while cleaning output: {e}")
+        # Extract JSON content
+        json_match = re.search(r"\{.*\}", output, re.DOTALL)
+        if json_match:
+            output = json_match.group(0)
+
+        # Replace line breaks and escape characters within string values
+        output = re.sub(
+            r'(?<=:)\s*"(.+?)"',
+            lambda m: '"{}"'.format(m.group(1).replace("\n", " ").replace("\\", " ")),
+            output,
+            flags=re.DOTALL,
+        )
+
+        # Remove any remaining newlines and extra whitespace
+        output = re.sub(r"\s+", " ", output)
+
+        return output
 
 
 # Initialize JSONParser using CheckOutput

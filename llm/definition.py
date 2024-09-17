@@ -12,12 +12,27 @@ from llm.promptTemplates import (
 )
 
 from parser.customStrParser import CustomStrOutputParser
-from requests.exceptions import HTTPError
+from google.api_core.exceptions import InternalServerError
+from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
+import json
 
 
 # Initialize API keys
 openai.api_key = st.secrets["openai"]
 gemini_api_key = st.secrets["gemini"]
+
+
+@retry(
+    stop=stop_after_attempt(2),
+    wait=wait_fixed(0.5),
+    retry=retry_if_exception_type(InternalServerError),
+)
+def create_gemini_model(model_name, api_key, generation_config):
+    return ChatGoogleGenerativeAI(
+        model=model_name,
+        api_key=api_key,
+        model_kwargs=generation_config,
+    )
 
 
 def create_judge_chain(model_class, model_name, api_key, prompt, variables) -> str:
@@ -30,11 +45,16 @@ def create_judge_chain(model_class, model_name, api_key, prompt, variables) -> s
             "max_output_tokens": 8192,
             "response_mime_type": "application/json",
         }
-        model = model_class(
-            model=model_name,
-            api_key=api_key,
-            model_kwargs=generation_config,
-        )
+        try:
+            model = create_gemini_model(
+                "gemini-1.5-pro",
+                api_key,
+                generation_config,
+            )
+        except InternalServerError:
+            print("Switch to Gemini-1.5-flash")
+            model = create_gemini_model("gemini-1.5-flash", api_key, generation_config)
+
     else:
 
         model = model_class(
@@ -63,11 +83,10 @@ def create_judge_chain(model_class, model_name, api_key, prompt, variables) -> s
             "reasoning": response["解説"],
         }
 
-    except ValidationError as e:
-        # Handle cases where the output is not valid or missing keys
-        st.session_state.error = e
+    except (ValidationError, KeyError, json.JSONDecodeError) as e:
+        print(f"Error in create_judge_chain: {str(e)}")
         return {
-            "error": "Invalid output. Required keys '結果' and '解説' are missing or incorrect format.",
+            "error": "Invalid output format or missing required keys.",
             "details": str(e),
         }
 
@@ -75,14 +94,6 @@ def create_judge_chain(model_class, model_name, api_key, prompt, variables) -> s
         st.session_state.error = e
         # Catch other potential errors
         return {"error": "An unexpected error occurred.", "details": str(e)}
-
-    except KeyError as e:
-        st.session_state.error = e
-        # Explicitly catch missing keys
-        return {
-            "error": "Missing keys in the response.",
-            "details": str(e),
-        }
 
 
 # Reusable function to create the chain
@@ -95,11 +106,16 @@ def create_hint_chain(model_class, model_name, api_key, prompt, variables) -> st
             "max_output_tokens": 8192,
             "response_mime_type": "text/plain",
         }
-        model = model_class(
-            model=model_name,
-            api_key=api_key,
-            model_kwargs=generation_config,
-        )
+        try:
+            model = model_class(
+                model=model_name,
+                api_key=api_key,
+                model_kwargs=generation_config,
+            )
+        except InternalServerError:
+            print("Switch to Gemini-1.5-flash")
+            model = create_gemini_model("gemini-1.5-flash", api_key, generation_config)
+
     else:
 
         model = model_class(
@@ -122,12 +138,6 @@ def create_hint_chain(model_class, model_name, api_key, prompt, variables) -> st
 
         # Return the filtered result
         return response
-    except HTTPError as http_err:
-        # Specifically catch HTTP-related errors, such as 500 Internal Server Error
-        return {
-            "error": "HTTP error occurred.",
-            "details": f"HTTPError: {str(http_err)}",
-        }
 
     except ValidationError as e:
         # Handle cases where the output is not valid or missing keys
@@ -149,22 +159,13 @@ def judge_gemini_chain(prompt, riddle) -> str:
         "user_answer": riddle["user_answer"],
     }
 
-    try:
-        return create_judge_chain(
-            model_class=ChatGoogleGenerativeAI,
-            model_name="gemini-1.5-pro",
-            api_key=gemini_api_key,
-            prompt=prompt,
-            variables=variables,
-        )
-    except:
-        return create_judge_chain(
-            model_class=ChatGoogleGenerativeAI,
-            model_name="gemini-1.5-flash",
-            api_key=gemini_api_key,
-            prompt=prompt,
-            variables=variables,
-        )
+    return create_judge_chain(
+        model_class=ChatGoogleGenerativeAI,
+        model_name="gemini-1.5-pro",
+        api_key=gemini_api_key,
+        prompt=prompt,
+        variables=variables,
+    )
 
 
 def hint_gemini_chain(prompt, riddle, hint, turn, reasoning) -> str:
@@ -176,22 +177,13 @@ def hint_gemini_chain(prompt, riddle, hint, turn, reasoning) -> str:
         "turn": turn,
         "reasoning": reasoning,
     }
-    try:
-        return create_hint_chain(
-            model_class=ChatGoogleGenerativeAI,
-            model_name="gemini-1.5-pro",
-            api_key=gemini_api_key,
-            prompt=prompt,
-            variables=variables,
-        )
-    except:
-        return create_judge_chain(
-            model_class=ChatGoogleGenerativeAI,
-            model_name="gemini-1.5-flash",
-            api_key=gemini_api_key,
-            prompt=prompt,
-            variables=variables,
-        )
+    return create_hint_chain(
+        model_class=ChatGoogleGenerativeAI,
+        model_name="gemini-1.5-pro",
+        api_key=gemini_api_key,
+        prompt=prompt,
+        variables=variables,
+    )
 
 
 # Functions for OpenAI LLM
