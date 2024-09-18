@@ -4,7 +4,7 @@ import streamlit as st
 
 # Answer checking prompt
 answer_checking_prompt_openai = PromptTemplate(
-    input_variables=["question", "correct_answer", "user_answer"],
+    input_variables=["question", "correct_answer", "user_answer", "output_instruction"],
     template="""
     
 ----------以下の記事はなぞなぞ問題のパターンについて説明をしています。
@@ -133,7 +133,7 @@ answer_checking_prompt_openai = PromptTemplate(
 ----------あなたはとてもスマートで正確なぞなぞ問題の評価者です。
 なぞなぞ問題を分析して、ユーザーの答えが正しいか判定をすることがあなたの仕事です。
 
-*Input Format：
+**Input Format**：
 ・問題：なぞなぞ問題
 ・正解：その問題の正解
 ・ユーザーの答え：ユーザーの答え
@@ -146,9 +146,7 @@ answer_checking_prompt_openai = PromptTemplate(
 ３．１で分析した問題と正解との関係を説明してください。そして、それに基づいた判定結果の理由を説明してください。
 
 
-----------Ideal Output Format(valid json format):JSONデータ以外は返さないこと
-結果：判定の結果。必ず'Correct'か'Incorrect'で答えてください。
-解説：判定結果の理由
+----------Ideal Output Format(valid json format):{output_instruction}
 
 ----------Example１:
 
@@ -172,7 +170,7 @@ answer_checking_prompt_openai = PromptTemplate(
 )
 
 answer_checking_prompt_gemini = PromptTemplate(
-    input_variables=["question", "correct_answer", "user_answer"],
+    input_variables=["question", "correct_answer", "user_answer", "output_instruction"],
     template="""
 
 ----------なぞなぞ問題のパターン:
@@ -332,9 +330,8 @@ Input Format:
 ５．ユーザーの答えが正しいかどうか"Correct"か"Incorrect"で判定をしてください。
 　　＊ユーザーの答えが正解と完全に一致しなくても正解の意図を正確に理解して条件を満足していれば"Correct"と判定してください。
 ６．判定結果と判定結果の理由を説明してください。
-----------Ideal Output Format(valid json format):JSONデータ以外は返さないこと
+----------Ideal Output Format(valid json format):{output_instruction}
 
-問題分析８：キーワード分析方法８の結果
 結果：判定結果必ず'Correct'か'Incorrect'で答えてください。
 解説：判定結果の理由
 
@@ -346,7 +343,6 @@ Input Format:
 ユーザーの答え：くも 
 
 **output**:
-"問題分析８": "このなぞなぞは「ソラ」を空ではなく、音階の「ソラ」と解釈する言葉遊びです。",
 "結果": "Incorrect",
 "解説": "ユーザーの答えは一般的な常識に基づいたものであり、なぞなぞの意図を理解できていません。正解は「シ」であり、これは音階の「ソラ」の上の音を指しています。"
 
@@ -359,7 +355,6 @@ Input Format:
 ユーザーの答え：蹴るバス
 
 **output**:
-"問題分析８": "このなぞなぞは、「サッカー選手」が「ボールを蹴飛ばす」という行動と「バス」という言葉を掛け合わせた、言葉遊びです。",
 "結果": "Incorrect",
 "解説": "ユーザーの答えは「蹴るバス」であり、正解の「けっとばす」とほぼ同じ意味であり、部分的に問題の意図を理解しています。しかし、サッカー選手が取る行動でありながらバスという言葉も含んでいる「けっとばす」と答えなければ言葉の遊びになりません。"
 
@@ -521,7 +516,7 @@ hint_generation_prompt_gemini = PromptTemplate(
 
 ###ヒントのレベル基準：
 ・'入力回数'が0の場合一番曖昧で面白いヒントを、1の場合絶対正解そのものは言わないで正解を推測できるヒントを、2の場合絶対正解そのものは言わないで一番正解を簡単に推測できるヒントを作成してください。
-・'入力回数'が0の場合激励の口調を、1の場合ユーザーを優しく叱って、2の場合続けて間違っているユーザーを婉曲に叱責してください。
+・'入力回数'が0の場合激励の口調を、1の場合ユーザーを優しく叱って、2の場合ユーザーを婉曲に叱責してください。
 
  ###ではこれからヒント作成時の注意事項に気を付けながらユーザーを正解に導ける面白いヒントを作成してください。
 
