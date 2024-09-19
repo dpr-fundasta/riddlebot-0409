@@ -1,6 +1,6 @@
 import streamlit as st
 import importlib
-
+from navigation import make_sidebar, admin_make_sidebar
 # from streamlit_chat import message
 from database.riddleFetch import fetch_random_riddle  # , add_riddle
 from llm.definition import (
@@ -40,8 +40,10 @@ def initialize_session_state():
 
 # Initialize session state on first load
 initialize_session_state()
-
-
+if st.session_state.username=="admin":
+    admin_make_sidebar()
+else:
+    make_sidebar()
 st.markdown(
     """
     <style>
@@ -98,7 +100,7 @@ st.markdown(
     '<h1 class="title">🤖 謎解きチャットボットへようこそ！</h1>', unsafe_allow_html=True
 )
 
-st.sidebar.markdown("<h3>🧠 LLMモデルを選択してください</h1>", unsafe_allow_html=True)
+st.sidebar.markdown("<h3>🧠 LLMモデルを選択してください</h3>", unsafe_allow_html=True)
 model = st.sidebar.radio("モデルを選択してください", ("ChatGPT", "Gemini"))
 
 display_riddle()
