@@ -72,7 +72,7 @@ def handle_login():
                     st.success(f"Logged In as {username}. Redirecting to admin page...")
                     sleep(0.5)
                     #st.switch_page("riddlebot/pages/ADD_RIDDLE.py")
-                    st.switch_page("pages/ADMIN.py")
+                    st.switch_page("pages/HOME.py")
                     # Implement admin-specific redirection or actions here
                 else:
                     st.success(f"Logged In as {username}")

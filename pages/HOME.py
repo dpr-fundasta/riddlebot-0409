@@ -16,12 +16,14 @@ from llm.promptTemplates import (
     hint_generation_prompt_gemini,
 )
 import streamlit.components.v1 as components
-
+from database.chat_history import add_data
 st.set_page_config(page_title="謎解きゲームチャットボット", page_icon="🧩")
 
 
 # Initialize the session state
 def initialize_session_state():
+
+    
     if "qcount" not in st.session_state:
         st.session_state.qcount = 0
     if "acount" not in st.session_state:
@@ -108,7 +110,7 @@ display_riddle()
 
 def reload_riddle():
     st.session_state.riddle_data = fetch_random_riddle()
-
+    st.session_state.reasoning = ""
     st.session_state.hint_history = []
 
 
@@ -145,7 +147,7 @@ if send_button and user_answer:
         response = judge_gemini_chain(
             answer_checking_prompt_gemini, st.session_state.riddle_data
         )
-
+    hint = ""
     result = response["result"]
     reasoning = response["reasoning"]
     st.session_state.reasoning = reasoning
@@ -179,7 +181,15 @@ if send_button and user_answer:
         st.session_state.hint_history.append(hint)
 
         st.error(hint)
-
+        
+    add_data(
+        question= st.session_state.riddle_data["question"],
+        correct_answer=st.session_state.riddle_data["correct_answer"],
+        user_answer=user_answer,
+        llm_response=result,
+        llm_hint= str(hint)
+    )
+    
     # Clear the text input box after submission
     st.session_state["text_input"] = ""
 
@@ -212,3 +222,5 @@ st.sidebar.markdown("<div class='score-label'>得点：</div>", unsafe_allow_htm
 st.sidebar.markdown(
     f"<div class='score-value'>{a_count} / {q_count}</div>", unsafe_allow_html=True
 )
+
+
