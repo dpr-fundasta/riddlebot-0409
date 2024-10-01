@@ -79,6 +79,6 @@ def update_user_status(username, status):
     if status == 'active':
         c.execute('UPDATE users SET status = ? WHERE username = ?', (status, username))
     elif status == 'rejected':
-        c.execute('DELETE FROM users WHERE username = ?', (username))
+        c.execute('DELETE FROM users WHERE username = ?', (username,))
     conn.commit()
     conn.close()
