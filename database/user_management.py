@@ -76,7 +76,9 @@ def update_user_status(username, status):
     db_path = os.path.join(os.path.dirname(__file__), 'login.db')
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
-    
-    c.execute('UPDATE users SET status = ? WHERE username = ?', (status, username))
+    if status == 'active':
+        c.execute('UPDATE users SET status = ? WHERE username = ?', (status, username))
+    elif status == 'rejected':
+        c.execute('DELETE FROM users WHERE username = ?', (username))
     conn.commit()
     conn.close()
