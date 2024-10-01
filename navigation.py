@@ -15,9 +15,8 @@ def get_current_page_name():
 
 def admin_make_sidebar():
     with st.sidebar:
-        # st.title("💎 Diamond Corp")
-        st.write("")
-        st.write("")
+        
+
 
         if st.session_state.get("logged_in", True):
             st.page_link("pages/ADD_RIDDLE.py", label="ADD RIDDLE", icon="📝")
@@ -66,11 +65,6 @@ def logout():
         del st.session_state['reasoning']
     if 'hint_history' in st.session_state:
         del st.session_state['hint_history']
-    # if 'acount' in st.session_state:
-    #     del st.session_state.acount
-    # if 'qcount' in st.session_state:
-    #     del st.session_state.qcount
-
     st.info("Logged out successfully!")
     sleep(0.5)
     st.switch_page("login.py")
