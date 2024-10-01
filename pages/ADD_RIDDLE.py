@@ -6,7 +6,7 @@ from database.riddleFetch import  add_riddle
 # Sidebar: Add a new riddle
 from navigation import make_sidebar, admin_make_sidebar
 
-if (st.session_state.logged_in ==False):
+if (st.session_state.logged_in == False):
     sleep(0.5)
     st.switch_page("login.py")
 

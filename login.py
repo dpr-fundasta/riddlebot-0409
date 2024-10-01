@@ -54,9 +54,7 @@ st.title("LLM RIDDLEBOT - FundastA")
 # Sidebar for switching between Login and SignUp
 menu = ["Login", "SignUp"]
 choice = st.sidebar.selectbox("Menu", menu)
-
 def handle_login():
-   
     st.subheader("Login Section")
 
     with st.form(key='login_form', clear_on_submit=True):
@@ -65,25 +63,26 @@ def handle_login():
         submit_button = st.form_submit_button("Login")
 
         if submit_button:
-            if login_check(username, password):
+            response = login_check(username, password)
+            if response == "Login successful":
                 if username == 'admin':
                     st.session_state.logged_in = True
                     st.session_state.username = "admin"
                     st.success(f"Logged In as {username}. Redirecting to admin page...")
                     sleep(0.5)
-                    #st.switch_page("riddlebot/pages/ADD_RIDDLE.py")
                     st.switch_page("pages/HOME.py")
-                    # Implement admin-specific redirection or actions here
                 else:
-                    st.success(f"Logged In as {username}")
-                    st.session_state.username = f"{username}"
                     st.session_state.logged_in = True
+                    st.session_state.username = f"{username}"
+                    st.success(f"Logged In as {username}")
                     sleep(0.5)
                     st.switch_page("pages/HOME.py")
-                    # Implement user-specific redirection or actions here
+            elif response == "Your account is pending approval by an admin.":
+                st.info(response)
+            elif response == "Your account has been rejected.":
+                st.error(response)
             else:
-                st.warning("Incorrect Username/Password")
-
+                st.warning(response)
 def handle_signup():
     st.subheader("Create New Account")
 
@@ -93,14 +92,13 @@ def handle_signup():
         submit_button = st.form_submit_button("Signup")
 
         if submit_button:
-            if user_registration(new_user, new_password):
-                st.success("You have successfully created an account! Please login to access the application.")
+            response = user_registration(new_user, new_password)
+            if response == "User registered successfully.":
+                st.success(response)
                 sleep(0.5)
-                
-                st.rerun()
-                #st.switch_page("login.py")  # This reloads the page and switches to login view
+                st.rerun()  # Optionally reload the page
             else:
-                st.warning("Username already exists. Please choose another one.")
+                st.warning(response)
 
 # Render the appropriate page based on the sidebar selection
 if choice == "Login":
