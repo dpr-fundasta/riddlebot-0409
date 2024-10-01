@@ -183,12 +183,15 @@ if send_button and user_answer:
         st.error(hint)
         
     add_data(
-        question= st.session_state.riddle_data["question"],
-        correct_answer=st.session_state.riddle_data["correct_answer"],
-        user_answer=user_answer,
-        llm_response=result,
-        llm_hint= str(hint)
-    )
+        username = str(st.session_state.username),
+        model = str(model),
+        question = str(st.session_state.riddle_data["question"]),
+        correct_answer = str(st.session_state.riddle_data["correct_answer"]),
+        user_answer = str(user_answer),
+        llm_response = str(result),
+        reasoning =  str(reasoning),
+        llm_hint = str(hint)
+         )
     
     # Clear the text input box after submission
     st.session_state["text_input"] = ""

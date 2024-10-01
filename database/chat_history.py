@@ -18,18 +18,16 @@ def export_to_excel(excel_filename):
 
 
 # Function to add data to the database (note that number is auto-incremented, so it is not provided)
-def add_data(question, correct_answer, user_answer, llm_response, llm_hint):
-    
-
+def add_data(username, model, question, correct_answer, user_answer, llm_response, reasoning, llm_hint):
     db_path = os.path.join(os.path.dirname(__file__), 'quiz.db')
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     
     # Insert data into the table without specifying 'number', as it auto-increments
     c.execute('''
-    INSERT INTO quiz_data (question, correct_answer, user_answer, llm_response, llm_hint)
-    VALUES (?, ?, ?, ?, ?)
-    ''', (question, correct_answer, user_answer, llm_response, llm_hint))
+    INSERT INTO quiz_data (username, model, question, correct_answer, user_answer, llm_response, reasoning, llm_hint)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (username, model, question, correct_answer, user_answer, llm_response, reasoning, llm_hint))
     
     conn.commit()
     conn.close()
