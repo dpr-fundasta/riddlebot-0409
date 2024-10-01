@@ -58,16 +58,18 @@ def make_sidebar():
 def logout():
     st.session_state.logged_in = False
     st.session_state.username= ""
+    st.session_state.acount = ''
+    st.session_state.qcount = ''
     if 'riddle_data' in st.session_state:
         del st.session_state['riddle_data']
     if 'reasoning' in st.session_state:
         del st.session_state['reasoning']
     if 'hint_history' in st.session_state:
         del st.session_state['hint_history']
-    if 'acount' in st.session_state:
-        del st.session_state.acount
-    if 'qcount' in st.session_state:
-        del st.session_state.qcount
+    # if 'acount' in st.session_state:
+    #     del st.session_state.acount
+    # if 'qcount' in st.session_state:
+    #     del st.session_state.qcount
 
     st.info("Logged out successfully!")
     sleep(0.5)
