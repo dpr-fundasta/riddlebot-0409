@@ -58,6 +58,9 @@ def make_sidebar():
 def logout():
     st.session_state.logged_in = False
     st.session_state.username= ""
+    st.session_state.riddle_data = {}
+    st.session_state.reasoning = ""
+    st.session_state.hint_history = [] 
     st.info("Logged out successfully!")
     sleep(0.5)
     st.switch_page("login.py")
