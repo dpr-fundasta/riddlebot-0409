@@ -23,7 +23,7 @@ file_name = f"CHATLOG_{formatted_time}.xlsx"
 # Button to generate and download the Excel file
 if st.button("VERIFY AND DOWNLOAD"):
     # Call the export_to_excel function to get a DataFrame
-    chat_history_df = export_to_excel(file_name)  # Assuming this returns a DataFrame
+    chat_history_df = export_to_excel()  # Assuming this returns a DataFrame
     
     if not chat_history_df.empty:
         # Show a preview of the data in the app
