@@ -61,6 +61,7 @@ st.divider()
 
 # Exporting the data
 st.subheader("Export Riddles to Excel")
+st.caption("Click View Button to View Log Data and Press Download to download it")
 if st.button("Export"):
     riddles_df = export_riddles_to_excel()
     st.write(riddles_df)  # Show data preview
