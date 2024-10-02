@@ -50,4 +50,4 @@ if st.button("VERIFY AND DOWNLOAD"):
     
     
     # Optionally, you could delete the file from the server after download to avoid storing files
-    os.remove(excel_filename)
+    os.remove(file_name)
