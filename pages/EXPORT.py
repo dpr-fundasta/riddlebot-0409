@@ -10,7 +10,7 @@ if st.session_state.username == "admin":
 else:
     make_sidebar()
 # Streamlit app interface
-st.subheader("DOWNLOAD CHAT HISTORY")
+st.subheader("Download Chat History")
 st.caption("Click the following button to View and Download log file:")
 
 # Get the current date and time

@@ -55,12 +55,14 @@ st.markdown(
 )
 
 # Admin page
-st.title("Admin User Management")
+st.subheader("New Account Requests")
+st.caption("Please Accept or Deny The following account requests")
+# st.title("Admin User Management")
 username = st.session_state.username
 
 # Check if the logged-in user is an admin
 if check_if_admin(username):
-    st.subheader("Pending User Registrations")
+    # st.subheader("Pending User Registrations")
     
     pending_users = get_pending_users()
     
