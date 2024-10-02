@@ -23,7 +23,7 @@ def admin_make_sidebar():
             st.page_link("pages/DEBUG.py", label="DEBUG", icon="⚙️")
             st.page_link("pages/HOME.py", label="RIDDLE BOT", icon="🏠")
             st.page_link("pages/ADMIN.py", label="ACCOUNT REQUESTS", icon="➕")
-            st.page_link("pages/EXPORT.py", label="EXPORT RIDDLE", icon="📤")
+            st.page_link("pages/EXPORT.py", label="HISTORY", icon="📤")
             st.page_link("pages/DB_MANAGEMENT.py", label="FILE UPLOAD", icon="📀")
             
 
@@ -42,7 +42,7 @@ def make_sidebar():
             st.page_link("pages/ADD_RIDDLE.py", label="ADD RIDDLE", icon="📝")
             st.page_link("pages/DEBUG.py", label="DEBUG", icon="⚙️")
             st.page_link("pages/HOME.py", label="HOME", icon="🏠")
-            st.page_link("pages/EXPORT.py", label="EXPORT RIDDLE", icon="📤")
+            st.page_link("pages/EXPORT.py", label="HISTORY", icon="📤")
         
 
             if st.button("Log out"):
