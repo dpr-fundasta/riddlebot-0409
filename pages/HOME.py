@@ -133,20 +133,26 @@ if next_riddle:
     st.rerun()
 
 # Handle user input
-if send_button and user_answer.strip():
+if send_button and user_answer:
     # Add user input to chat history
 
     st.session_state.riddle_data["user_answer"] = user_answer
-
+    if user_answer.strip() > 0:
     # Choose the LLM model
-    if model == "ChatGPT":
-        response = judge_openai_chain(
-            answer_checking_prompt_openai, st.session_state.riddle_data
-        )
+        if model == "ChatGPT":
+            response = judge_openai_chain(
+                answer_checking_prompt_openai, st.session_state.riddle_data
+            )
+        else:
+            response = judge_gemini_chain(
+                answer_checking_prompt_gemini, st.session_state.riddle_data
+            )
     else:
-        response = judge_gemini_chain(
-            answer_checking_prompt_gemini, st.session_state.riddle_data
-        )
+             response = {
+                "result":"Incorrect",
+                "reasoning":"ユーザーの答は空欄です。ユーザーは問題の意図を理解することが出来ず、何も答えることが出来ませんでした。そのためこの答えは間違ってます"
+                }
+       
     hint = ""
     result = response["result"]
     reasoning = response["reasoning"]
