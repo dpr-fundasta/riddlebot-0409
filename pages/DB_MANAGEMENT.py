@@ -4,6 +4,7 @@ from database.riddleFetch import bulk_insert_riddles, clear_riddles_table, expor
 import io
 from time import sleep
 from navigation import make_sidebar, admin_make_sidebar
+from datetime import datetime
 if (st.session_state.logged_in == False):
     sleep(0.5)
     st.switch_page("login.py")
@@ -12,10 +13,10 @@ if st.session_state.username=="admin":
     admin_make_sidebar()
 else:
     make_sidebar()
-
+st.subheader("Database Management")
 # Upload Excel sheet
 st.caption("Please upload an excel sheet with column question | correct_answer")
-uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
+uploaded_file = st.file_uploader("", type="xlsx")
 # Option to either append or replace data
 if uploaded_file:
     try:
@@ -41,8 +42,8 @@ if uploaded_file:
         st.error(f"Error: Unable to read the file. Please upload a valid Excel (.xlsx) file.")
 
 # Exporting the data
-st.header("Export Riddles to Excel")
-if st.button("Export to Excel"):
+st.subheader("Export Riddles to Excel")
+if st.button("Export"):
     riddles_df = export_riddles_to_excel()
     st.write(riddles_df)  # Show data preview
     
@@ -51,10 +52,17 @@ if st.button("Export to Excel"):
     riddles_df.to_excel(buffer, index=False, engine='openpyxl')
     buffer.seek(0)
 
+    # Get the current date and time
+    now = datetime.now()
+    formatted_time = now.strftime("%d-%m-%Y-%H-%M")
+
+    # Create the file name
+    file_name = f"RIDDLEDB_{formatted_time}.xlsx"
+
     # Download link
     st.download_button(
         label="Download data as Excel",
         data=buffer,
-        file_name="riddles_export.xlsx",
+        file_name=file_name,
         mime="application/vnd.ms-excel"
     )
