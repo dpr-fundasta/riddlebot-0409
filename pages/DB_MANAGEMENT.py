@@ -2,6 +2,17 @@ import streamlit as st
 import pandas as pd
 from database.riddleFetch import bulk_insert_riddles, clear_riddles_table, export_riddles_to_excel
 import io
+from time import sleep
+from navigation import make_sidebar, admin_make_sidebar
+if (st.session_state.logged_in == False):
+    sleep(0.5)
+    st.switch_page("login.py")
+
+if st.session_state.username=="admin":
+    admin_make_sidebar()
+else:
+    make_sidebar()
+
 # Upload Excel sheet
 st.title("Riddles Management")
 uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
