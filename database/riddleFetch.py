@@ -2,6 +2,7 @@ import sqlite3
 import os
 import random
 import streamlit as st
+import pandas as pd
 
 # Function to get a database connection
 def get_db_connection():
@@ -59,4 +60,36 @@ def fetch_random_riddle():
             }
     else:
         return None
+    
+
+# Function to delete all existing data in the table
+def clear_riddles_table():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM riddles')
+    conn.commit()
+    conn.close()
+
+# Function to insert data in bulk from a DataFrame
+def bulk_insert_riddles(df):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Insert the data into the table
+    for _, row in df.iterrows():
+        cursor.execute('''
+            INSERT INTO riddles (question, correct_answer, reasoning_of_answer)
+            VALUES (?, ?, ?);
+        ''', (row['question'], row['correct_answer'], ""))
+    
+    conn.commit()
+    conn.close()
+
+# Function to export riddles data to an Excel file
+def export_riddles_to_excel():
+    conn = get_db_connection()
+    query = "SELECT * FROM riddles"
+    df = pd.read_sql_query(query, conn)
+    conn.close()
+    return df
 
