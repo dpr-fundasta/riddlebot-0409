@@ -4,7 +4,7 @@ import os
 from database.chat_history import export_to_excel  # Import your export_to_excel function
 from navigation import make_sidebar, admin_make_sidebar
 from datetime import datetime
-
+from database.chat_history import export_to_excel 
 if st.session_state.username == "admin":
     admin_make_sidebar()
 else:
