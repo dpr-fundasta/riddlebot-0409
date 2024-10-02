@@ -1,6 +1,6 @@
 import streamlit as st
 from navigation import make_sidebar, admin_make_sidebar
-from HOME import reasoning
+from HOME import response
 if st.session_state.username == "admin":
     admin_make_sidebar()
 else:
@@ -67,7 +67,7 @@ st.write("Database")
 st.write(st.session_state.riddle_data)
 st.write("Reasoning of the judgement")
 st.write(st.session_state.reasoning)
-st.write(reasoning)
+st.write(response)
 st.write("History")
 st.write(st.session_state.hint_history)
 st.write("Username")
