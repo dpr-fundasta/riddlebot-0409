@@ -137,7 +137,7 @@ if send_button and user_answer:
     # Add user input to chat history
 
     st.session_state.riddle_data["user_answer"] = user_answer
-    if user_answer.strip() > 0:
+    if len(user_answer.strip()) > 0:
     # Choose the LLM model
         if model == "ChatGPT":
             response = judge_openai_chain(
