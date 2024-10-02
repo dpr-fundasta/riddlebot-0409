@@ -14,29 +14,32 @@ else:
     make_sidebar()
 
 # Upload Excel sheet
-st.title("Riddles Management")
+st.caption("Please upload an excel sheet with column question | correct_answer")
 uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
-
 # Option to either append or replace data
 if uploaded_file:
-    df = pd.read_excel(uploaded_file)
-    
-    # Show preview of the data
-    st.write("Preview of uploaded data:")
-    st.write(df)
-    
-    # Insert options
-    action = st.radio("Do you want to append to or replace the existing riddles data?", 
-                      ('Append', 'Replace'))
-    
-    if st.button("Insert Data"):
-        if action == 'Replace':
-            # Clear existing data
-            clear_riddles_table()
+    try:
+        df = pd.read_excel(uploaded_file)
         
-        # Insert new data
-        bulk_insert_riddles(df)
-        st.success(f"Data successfully {'replaced' if action == 'Replace' else 'appended'}!")
+        # Show preview of the data
+        st.write("Preview of uploaded data:")
+        st.write(df)
+        
+        # Insert options
+        action = st.radio("Do you want to append to or replace the existing riddles data?", 
+                          ('Append', 'Replace'))
+        
+        if st.button("Insert Data"):
+            if action == 'Replace':
+                # Clear existing data
+                clear_riddles_table()
+            
+            # Insert new data
+            bulk_insert_riddles(df)
+            st.success(f"Data successfully {'replaced' if action == 'Replace' else 'appended'}!")
+    except Exception as e:
+        st.error(f"Error: Unable to read the file. Please upload a valid Excel (.xlsx) file.")
+
 # Exporting the data
 st.header("Export Riddles to Excel")
 if st.button("Export to Excel"):
