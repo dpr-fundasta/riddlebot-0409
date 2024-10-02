@@ -78,9 +78,9 @@ def bulk_insert_riddles(df):
     # Insert the data into the table
     for _, row in df.iterrows():
         cursor.execute('''
-            INSERT INTO riddles (question, correct_answer, reasoning_of_answer)
-            VALUES (?, ?, ?);
-        ''', (row['question'], row['correct_answer'], ""))
+            INSERT INTO riddles (question, correct_answer)
+            VALUES (?, ?);
+        ''', (row['question'], row['correct_answer']))
     
     conn.commit()
     conn.close()
