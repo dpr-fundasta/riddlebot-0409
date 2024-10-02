@@ -13,7 +13,7 @@ else:
 # Streamlit app interface
 
 st.subheader("DOWNLOAD CHAT HISTORY")
-st.caption("Click the following button to download log file:")
+st.caption("Click the following button to View and Download log file:")
 
 # Get the current date and time
 now = datetime.now()
