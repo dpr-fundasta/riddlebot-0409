@@ -40,7 +40,7 @@ if uploaded_file:
             st.success(f"Data successfully {'replaced' if action == 'Replace' else 'appended'}!")
     except Exception as e:
         st.error(f"Error: Unable to read the file. Please upload a valid Excel (.xlsx) file.")
-
+st.divider() 
 # Exporting the data
 st.subheader("Export Riddles to Excel")
 if st.button("Export"):
