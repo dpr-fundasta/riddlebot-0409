@@ -1,6 +1,6 @@
 import streamlit as st
 from navigation import make_sidebar, admin_make_sidebar
-from HOME import response
+from pages.HOME import response
 if st.session_state.username == "admin":
     admin_make_sidebar()
 else:
