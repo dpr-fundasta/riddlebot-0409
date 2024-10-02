@@ -24,7 +24,7 @@ def admin_make_sidebar():
             st.page_link("pages/HOME.py", label="RIDDLE BOT", icon="🏠")
             st.page_link("pages/ADMIN.py", label="ACCOUNT REQUESTS", icon="➕")
             st.page_link("pages/EXPORT.py", label="EXPORT RIDDLE", icon="📤")
-            
+            st.page_link("pages/DB_MANAGEMENT.py.py", label="FILE UPLOAD", icon="📀")
             
 
             if st.button("Log out"):
