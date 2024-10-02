@@ -133,7 +133,7 @@ if next_riddle:
     st.rerun()
 
 # Handle user input
-if send_button and user_answer:
+if send_button and user_answer.strip():
     # Add user input to chat history
 
     st.session_state.riddle_data["user_answer"] = user_answer
