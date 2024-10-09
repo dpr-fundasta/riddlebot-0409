@@ -75,17 +75,17 @@ def create_judge_chain(model_class, model_name, api_key, prompt, variables) -> s
 
   
 
-    # except OutputParserException as e:
-    #     print(f"Error in create_judge_chain: {str(e)}")
-    #     invalid_output = str(e).split("Invalid json output:")[-1].strip()
-    #     # Clean the invalid JSON string
-    #     response = clean_json_string(invalid_output)
-    #     if "結果" not in response or "解説" not in response:
-    #         raise KeyError("Missing required keys '結果' and/or '解説' in response")
-    #     return {
-    #         "result": response["結果"],
-    #         "reasoning": response["解説"],
-    #     }
+    except OutputParserException as e:
+        # print(f"Error in create_judge_chain: {str(e)}")
+        # invalid_output = str(e).split("Invalid json output:")[-1].strip()
+        # # Clean the invalid JSON string
+        # response = clean_json_string(invalid_output)
+        # if "結果" not in response or "解説" not in response:
+        #     raise KeyError("Missing required keys '結果' and/or '解説' in response")
+        return {
+            "result": "Incorrect",
+            "reasoning": "LLMはこのなぞなぞの結果と推論を生成することができなかった。",
+        }
 
     except (ValidationError, KeyError, json.JSONDecodeError) as e:
         print(f"Error in create_judge_chain: {str(e)}")
