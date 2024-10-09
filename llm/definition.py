@@ -17,7 +17,7 @@ from langchain_core.exceptions import OutputParserException
 from google.api_core.exceptions import InternalServerError
 from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
 import json
-import json.JSONDecodeError  as ff
+
 
 
 # Initialize API keys
