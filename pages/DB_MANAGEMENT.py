@@ -5,27 +5,13 @@ import io
 from time import sleep
 from navigation import make_sidebar, admin_make_sidebar
 from datetime import datetime
+from pages.CHECK_LOGIN import check_login
+check_login()
 
-# User authentication and sidebar setup
-# if (st.session_state.logged_in == False):
-#     sleep(0.5)
-#     st.switch_page("login.py")
-
-# if st.session_state.username == "admin":
-#     admin_make_sidebar()
-# else:
-#     make_sidebar()
-
-if "username" not in st.session_state:
-    # Redirect to login page if username is not initialized
-    # st.session_state.username = None  # Optional: set it to None for clarity
-    st.switch_page("login.py")
+if st.session_state.username == "admin":
+    admin_make_sidebar()
 else:
-    # Check the value of username
-    if st.session_state.username == "admin":
-        admin_make_sidebar()
-    else:
-        make_sidebar()
+    make_sidebar()
 
 st.subheader("Database Management")
 st.caption("Please upload an Excel sheet with columns: question | correct_answer")

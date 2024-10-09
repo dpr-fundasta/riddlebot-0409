@@ -1,10 +1,12 @@
 import streamlit as st
 from navigation import make_sidebar, admin_make_sidebar
-
+from pages.CHECK_LOGIN import check_login
+check_login()
 if st.session_state.username == "admin":
     admin_make_sidebar()
 else:
     make_sidebar()
+
 
 
 st.markdown(

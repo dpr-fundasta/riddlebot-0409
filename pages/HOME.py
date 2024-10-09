@@ -18,9 +18,10 @@ from llm.promptTemplates import (
 import streamlit.components.v1 as components
 from database.chat_history import add_data
 from pages.CHECK_LOGIN import check_login
+check_login()
 st.set_page_config(page_title="謎解きゲームチャットボット", page_icon="🧩")
 
-check_login()
+
 # Initialize the session state
 def initialize_session_state():
 

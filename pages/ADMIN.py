@@ -1,7 +1,8 @@
 import streamlit as st
 from navigation import admin_make_sidebar
 from database.user_management import get_pending_users, update_user_status
-
+from pages.CHECK_LOGIN import check_login
+check_login()
 admin_make_sidebar()
 
 # Ensure that the user is logged in as admin
