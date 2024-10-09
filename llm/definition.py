@@ -17,6 +17,7 @@ from langchain_core.exceptions import OutputParserException
 from google.api_core.exceptions import InternalServerError
 from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
 import json
+import json.JSONDecodeError  as ff
 
 
 # Initialize API keys
@@ -27,7 +28,7 @@ gemini_api_key = st.secrets["gemini"]
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_fixed(3),
-    retry=retry_if_exception_type(OutputParserException, json.JSONDecodeError ),
+    retry=retry_if_exception_type(OutputParserException, ValueError ),
 )
 def create_judge_chain(model_class, model_name, api_key, prompt, variables) -> str:
 
