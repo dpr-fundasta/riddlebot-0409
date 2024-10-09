@@ -19,7 +19,6 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 import json
 
 
-
 # Initialize API keys
 openai.api_key = st.secrets["openai"]
 gemini_api_key = st.secrets["gemini"]
@@ -28,7 +27,7 @@ gemini_api_key = st.secrets["gemini"]
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_fixed(3),
-    retry=retry_if_exception_type(OutputParserException, ValueError ),
+    retry=retry_if_exception_type(InternalServerError),
 )
 def create_judge_chain(model_class, model_name, api_key, prompt, variables) -> str:
 
