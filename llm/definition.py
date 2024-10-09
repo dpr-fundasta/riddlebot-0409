@@ -26,8 +26,8 @@ gemini_api_key = st.secrets["gemini"]
 
 @retry(
     stop=stop_after_attempt(3),
-    wait=wait_fixed(0.5),
-    retry=retry_if_exception_type(InternalServerError),
+    wait=wait_fixed(3),
+    retry=retry_if_exception_type(InternalServerError, OutputParserException, json.JSONDecodeError ),
 )
 def create_judge_chain(model_class, model_name, api_key, prompt, variables) -> str:
 
