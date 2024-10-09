@@ -150,9 +150,15 @@ if send_button and user_answer:
                 answer_checking_prompt_openai, st.session_state.riddle_data
             )
         else:
-            response = judge_gemini_chain(
-                answer_checking_prompt_gemini, st.session_state.riddle_data
-            )
+            try:
+                response = judge_gemini_chain(
+                    answer_checking_prompt_gemini, st.session_state.riddle_data
+                )
+            except Exception as e:
+                 response = {
+                "result":"Incorrect",
+                "reasoning":"LLMはこのなぞなぞの結果と推論を生成することができなかった。"
+                }
     else:
              response = {
                 "result":"Incorrect",
