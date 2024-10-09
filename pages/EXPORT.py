@@ -5,10 +5,21 @@ from database.chat_history import export_to_excel  # Import your export_to_excel
 from navigation import make_sidebar, admin_make_sidebar
 from datetime import datetime
 from database.chat_history import export_to_excel 
-if st.session_state.username == "admin":
-    admin_make_sidebar()
+# if st.session_state.username == "admin":
+#     admin_make_sidebar()
+# else:
+#     make_sidebar()
+
+if "username" not in st.session_state:
+    # Redirect to login page if username is not initialized
+    # st.session_state.username = None  # Optional: set it to None for clarity
+    st.switch_page("login.py")
 else:
-    make_sidebar()
+    # Check the value of username
+    if st.session_state.username == "admin":
+        admin_make_sidebar()
+    else:
+        make_sidebar()
 # Streamlit app interface
 st.subheader("Download Chat History")
 st.caption("Click the following button to View and Download log file:")

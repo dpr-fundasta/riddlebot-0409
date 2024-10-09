@@ -42,10 +42,21 @@ def initialize_session_state():
 
 # Initialize session state on first load
 initialize_session_state()
-if st.session_state.username=="admin":
-    admin_make_sidebar()
+# if st.session_state.username=="admin":
+#     admin_make_sidebar()
+# else:
+#     make_sidebar()
+
+if "username" not in st.session_state:
+    # Redirect to login page if username is not initialized
+    # st.session_state.username = None  # Optional: set it to None for clarity
+    st.switch_page("login.py")
 else:
-    make_sidebar()
+    # Check the value of username
+    if st.session_state.username == "admin":
+        admin_make_sidebar()
+    else:
+        make_sidebar()
 st.markdown(
     """
     <style>
