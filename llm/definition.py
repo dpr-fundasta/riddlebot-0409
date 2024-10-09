@@ -17,14 +17,7 @@ from langchain_core.exceptions import OutputParserException
 from google.api_core.exceptions import InternalServerError
 from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
 import json
-import logging
 
-# Configure logging
-logging.basicConfig(
-    filename='riddlebot.log',
-    level=logging.ERROR,
-    format='%(asctime)s %(levelname)s:%(message)s'
-)
 
 # Initialize API keys
 openai.api_key = st.secrets["openai"]
@@ -80,42 +73,31 @@ def create_judge_chain(model_class, model_name, api_key, prompt, variables) -> s
             "reasoning": response["解説"],
         }
 
-    except OutputParserException as e:
-        logging.error(f"OutputParserException in create_judge_chain: {str(e)}")
-        invalid_output = str(e).split("Invalid json output:")[-1].strip()
-        # Clean the invalid JSON string
-        try:
-            response = clean_json_string(invalid_output)
-            if "error" in response:
-                return response  # Return the error message if the JSON was invalid
+  
 
-            if "結果" not in response or "解説" not in response:
-                raise KeyError("Missing required keys '結果' and/or '解説' in response")
-
-            return {
-                "result": response["結果"],
-                "reasoning": response["解説"],
-            }
-        except json.JSONDecodeError as json_err:
-            logging.error(f"JSONDecodeError in create_judge_chain after clean_json_string: {str(json_err)}")
-            return {
-                "error": "The system encountered an issue processing the response. Please try again later.",
-                "details": str(json_err),
-            }
+    # except OutputParserException as e:
+    #     print(f"Error in create_judge_chain: {str(e)}")
+    #     invalid_output = str(e).split("Invalid json output:")[-1].strip()
+    #     # Clean the invalid JSON string
+    #     response = clean_json_string(invalid_output)
+    #     if "結果" not in response or "解説" not in response:
+    #         raise KeyError("Missing required keys '結果' and/or '解説' in response")
+    #     return {
+    #         "result": response["結果"],
+    #         "reasoning": response["解説"],
+    #     }
 
     except (ValidationError, KeyError, json.JSONDecodeError) as e:
-        logging.error(f"ValidationError/KeyError/JSONDecodeError in create_judge_chain: {str(e)}")
+        print(f"Error in create_judge_chain: {str(e)}")
         return {
             "error": "Invalid output format or missing required keys.",
             "details": str(e),
         }
 
     except Exception as e:
-        logging.error(f"Unexpected error in create_judge_chain: {str(e)}")
-        # Optionally, you can store the error in session state or handle it as needed
-        st.session_state.error = str(e)
-        # Return a general error message without exposing details
-        return {"error": "An unexpected error occurred. Please try again later."}
+        st.session_state.error = e
+        # Catch other potential errors
+        return {"error": "An unexpected error occurred.", "details": str(e)}
 
 
 # Reusable function to create the chain
@@ -159,15 +141,13 @@ def create_hint_chain(model_class, model_name, api_key, prompt, variables) -> st
         return response
 
     except ValidationError as e:
-        logging.error(f"ValidationError in create_hint_chain: {str(e)}")
         # Handle cases where the output is not valid or missing keys
         return {
-            "error": "Invalid output. Required a string as the output.",
+            "error": "Invalid output. Required a string as the output",
             "details": str(e),
         }
 
     except Exception as e:
-        logging.error(f"Unexpected error in create_hint_chain: {str(e)}")
         # Catch other potential errors
         return {"error": "An unexpected error occurred.", "details": str(e)}
 
@@ -247,29 +227,14 @@ def hint_openai_chain(prompt, riddle, hint, turn, reasoning) -> str:
 
 
 def clean_json_string(output):
-    """
-    Cleans and parses a JSON string.
-
-    Args:
-        output (str): The raw output string to be cleaned and parsed.
-
-    Returns:
-        dict: The parsed JSON as a dictionary.
-
-    Raises:
-        json.JSONDecodeError: If the output cannot be decoded as JSON.
-    """
     output = output.strip("`").strip()
     # Remove 'json' prefix
     if output.startswith("json"):
-        output = output[len("json"):].strip()
+        output = output[len("json") :].strip()
     # Remove backslash-newline sequences
     output = re.sub(r"\\\s*[\r\n]+", "", output)
     # Escape any remaining backslashes
     output = output.replace("\n", "")
 
-    try:
-        return json.loads(output)
-    except json.JSONDecodeError as e:
-        logging.error(f"JSONDecodeError in clean_json_string: {str(e)} | Output: {output}")
-        raise  # Re-raise the exception to be handled by the caller
+    return json.loads(output)
+

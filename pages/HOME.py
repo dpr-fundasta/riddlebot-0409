@@ -164,9 +164,8 @@ if send_button and user_answer:
         result = response["result"]
         reasoning = response["reasoning"]
     except KeyError:
-        result = "incorrect"
-        reasoning = f"{model} Failed to check the answer. Please try later"
-        
+        result = "Incorrect"
+        reasoning = "LLMはこのなぞなぞの結果と推論を生成することができなかった。"
     st.session_state.reasoning = reasoning
     turn = min(len(st.session_state.hint_history), 2)
 
