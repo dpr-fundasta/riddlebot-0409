@@ -166,12 +166,19 @@ if send_button and user_answer:
                 }
        
     hint = ""
-    try:
+    if isinstance(response, dict) and "result" in response and "reasoning" in response:
         result = response["result"]
         reasoning = response["reasoning"]
-    except KeyError:
+    else:
+   
         result = "Incorrect"
         reasoning = "LLMはこのなぞなぞの結果と推論を生成することができなかった。"
+    # try:
+    #     result = response["result"]
+    #     reasoning = response["reasoning"]
+    # except KeyError:
+    #     result = "Incorrect"
+    #     reasoning = "LLMはこのなぞなぞの結果と推論を生成することができなかった。"
     st.session_state.reasoning = reasoning
     turn = min(len(st.session_state.hint_history), 2)
 
