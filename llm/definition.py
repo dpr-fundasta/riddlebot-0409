@@ -254,31 +254,31 @@ def clean_json_string(output):
 
 
 # Code for modular test
-if __name__ == "__main__":
-    riddle = {
-        "question": "からしはからしでも冷たいからしは？",
-        "correct_answer": "木枯らし",
-        "user_answer": "わさび",
-    }
-    turn = 0
-    hint_history = []
+# if __name__ == "__main__":
+#     riddle = {
+#         "question": "からしはからしでも冷たいからしは？",
+#         "correct_answer": "木枯らし",
+#         "user_answer": "わさび",
+#     }
+#     turn = 0
+#     hint_history = []
 
-    # gpt = judge_openai_chain(answer_checking_prompt_openai, riddle)
-    # print(gpt)
-    # reasoning = gpt["reasoning"]
-    # hint_o = hint_openai_chain(
-    #     hint_generation_prompt_openai, riddle, hint_history, turn, reasoning
-    # )
-    # print(hint_o)
+#     # gpt = judge_openai_chain(answer_checking_prompt_openai, riddle)
+#     # print(gpt)
+#     # reasoning = gpt["reasoning"]
+#     # hint_o = hint_openai_chain(
+#     #     hint_generation_prompt_openai, riddle, hint_history, turn, reasoning
+#     # )
+#     # print(hint_o)
 
-    gemini = judge_gemini_chain(answer_checking_prompt_gemini, riddle)
-    print(gemini)
-    reasoning = gemini["reasoning"]
-    hint_g = hint_gemini_chain(
-        hint_generation_prompt_gemini, riddle, hint_history, turn, reasoning
-    )
-    print(hint_g)
+#     gemini = judge_gemini_chain(answer_checking_prompt_gemini, riddle)
+#     print(gemini)
+#     reasoning = gemini["reasoning"]
+#     hint_g = hint_gemini_chain(
+#         hint_generation_prompt_gemini, riddle, hint_history, turn, reasoning
+#     )
+#     print(hint_g)
 
-    # invalid_output = '```json { "結果": "Correct", "解説": "問題文の「蕎麦屋」は「そばや」と読み、「そば」を「ソバ」と音階読みに変換することで「ソ」の音になります。\ 「近く」は音階で「ソ」の近くの音を指し、正解の「おもちゃ屋」は「おもちゃや」と読み「や」を「ラ」と音階読みに変換することで「ラ」の音になります。\ よって、ユーザーの答えは正解の意図と合致していると判断し、「Correct」と判定しました。" } ```'
-    # parsed_json = clean_json_string(invalid_output)
-    # print(parsed_json)
+#     # invalid_output = '```json { "結果": "Correct", "解説": "問題文の「蕎麦屋」は「そばや」と読み、「そば」を「ソバ」と音階読みに変換することで「ソ」の音になります。\ 「近く」は音階で「ソ」の近くの音を指し、正解の「おもちゃ屋」は「おもちゃや」と読み「や」を「ラ」と音階読みに変換することで「ラ」の音になります。\ よって、ユーザーの答えは正解の意図と合致していると判断し、「Correct」と判定しました。" } ```'
+#     # parsed_json = clean_json_string(invalid_output)
+#     # print(parsed_json)
