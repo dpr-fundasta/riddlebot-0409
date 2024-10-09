@@ -1,8 +1,20 @@
 import streamlit as st
+from time import sleep
 st.set_page_config(page_title=" 新しい謎を追加", page_icon="📝")
 from database.riddleFetch import  add_riddle
-# Sidebar: Add a new riddle
 
+# Sidebar: Add a new riddle
+from navigation import make_sidebar, admin_make_sidebar
+from pages.CHECK_LOGIN import check_login
+check_login()
+# if (st.session_state.logged_in == False):
+#     sleep(0.5)
+#     st.switch_page("login.py")
+
+if st.session_state.username=="admin":
+    admin_make_sidebar()
+else:
+    make_sidebar()
 
 st.markdown(
     """

@@ -1,7 +1,9 @@
-# import sqlite3
-# import random
-# import streamlit as st
+import sqlite3
+import random
 
+import sqlite3
+
+import pandas as pd
 # # Function to get a database connection
 # def get_db_connection():
 #     conn = sqlite3.connect(r'D:\FundastA\riddlebot\database\riddles.db')
@@ -156,3 +158,72 @@
 # # Commit the changes and close the connection
 # connection.commit()
 # connection.close()
+
+import os
+
+# Function to create the database and table if it doesn't already exist
+def create_database(db_name='quiz.db'):
+    db_path = os.path.join(os.path.dirname(__file__), 'quiz.db')
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    # Create table with auto-incrementing primary key
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS quiz_data (
+        number INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT,
+        model TEXT,
+        question TEXT,
+        correct_answer TEXT,
+        user_answer TEXT,
+        llm_response TEXT,
+        reasoning TEXT,
+        llm_hint TEXT
+    )
+    ''')
+    conn.commit()
+    conn.close()
+
+# Function to export the database contents to an Excel file
+def export_to_excel(excel_filename='quiz_data.xlsx', db_name='quiz.db'):
+    db_path = os.path.join(os.path.dirname(__file__), 'quiz.db')
+    conn = sqlite3.connect(db_path)
+    
+    # Use pandas to read the table and export to Excel
+    df = pd.read_sql_query("SELECT * FROM quiz_data", conn)
+    
+    # Write the DataFrame to an Excel file
+    df.to_excel(excel_filename, index=False)  # Export without the DataFrame index
+    
+    conn.close()
+
+
+# Function to add data to the database (note that number is auto-incremented, so it is not provided)
+def add_data(username, model, question, correct_answer, user_answer, llm_response, reasoning, llm_hint, db_name='quiz.db'):
+    db_path = os.path.join(os.path.dirname(__file__), 'quiz.db')
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    
+    # Insert data into the table without specifying 'number', as it auto-increments
+    c.execute('''
+    INSERT INTO quiz_data (username, model, question, correct_answer, user_answer, llm_response, reasoning, llm_hint)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (username, model, question, correct_answer, user_answer, llm_response, reasoning, llm_hint))
+    
+    conn.commit()
+    conn.close()
+
+if __name__ == '__main__':
+    # create_database()
+     # Add example data (no need to specify 'number' as it auto-increments)
+    # add_data("What is the capital of France?", "Paris", "London", "Paris is the capital", "Hint: It's a European city.")
+    # add_data("What is 2 + 2?", "4", "3", "Correct answer is 4", "Hint: Think basic math.")
+    export_to_excel('quiz_data.xlsx')
+    #  add_data(
+    #     "jane_smith", "gpt-4", 
+    #     "What is 2 + 2?", 
+    #     "4", 
+    #     "3", 
+    #     "Correct answer is 4", 
+    #     "User made a simple arithmetic mistake", 
+    #     "Hint: Think basic math."
+    # )

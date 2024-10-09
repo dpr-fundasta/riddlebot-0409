@@ -1,23 +1,31 @@
 import streamlit as st
 import importlib
+from navigation import make_sidebar, admin_make_sidebar
 # from streamlit_chat import message
-from database.riddleFetch import fetch_random_riddle # , add_riddle
+from database.riddleFetch import fetch_random_riddle  # , add_riddle
 from llm.definition import (
-    judge_gemini_chain, 
+    judge_gemini_chain,
     judge_openai_chain,
     hint_gemini_chain,
-    hint_openai_chain
+    hint_openai_chain,
 )
 from llm.promptTemplates import (
     answer_checking_prompt_openai,
     answer_checking_prompt_gemini,
     hint_generation_prompt_openai,
-    hint_generation_prompt_gemini
+    hint_generation_prompt_gemini,
 )
 import streamlit.components.v1 as components
+from database.chat_history import add_data
+from pages.CHECK_LOGIN import check_login
+check_login()
 st.set_page_config(page_title="謎解きゲームチャットボット", page_icon="🧩")
+
+
 # Initialize the session state
 def initialize_session_state():
+
+    
     if "qcount" not in st.session_state:
         st.session_state.qcount = 0
     if "acount" not in st.session_state:
@@ -26,11 +34,22 @@ def initialize_session_state():
         st.session_state.riddle_data = fetch_random_riddle()
     if "hint_history" not in st.session_state:
         st.session_state.hint_history = []
-    if "text_input" not in st.session_state: #my code
+    if "text_input" not in st.session_state:  # my code
         st.session_state.text_input = ""
+    if "reasoning" not in st.session_state:  # my code
+        st.session_state.reasoning = ""
+    if "error" not in st.session_state:  # my code
+        st.session_state.error = ""
+
 
 # Initialize session state on first load
 initialize_session_state()
+
+
+if st.session_state.username=="admin":
+    admin_make_sidebar()
+else:
+    make_sidebar()
 
 
 st.markdown(
@@ -75,39 +94,43 @@ st.markdown(
     }
     </style>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 
 # Display the riddle
 def display_riddle():
     riddle = st.session_state.riddle_data
-    st.info(riddle['question'], icon="ℹ️")
-  
+    st.info(riddle["question"], icon="ℹ️")
 
 
+st.markdown(
+    '<h1 class="title">🤖 謎解きチャットボットへようこそ！</h1>', unsafe_allow_html=True
+)
 
-st.markdown('<h1 class="title">🤖 謎解きチャットボットへようこそ！</h1>', unsafe_allow_html=True)
-
-st.sidebar.markdown('<h3>🧠 LLMモデルを選択してください</h1>', unsafe_allow_html=True)
-model = st.sidebar.radio("モデルを選択してください", ('ChatGPT', 'Gemini'))
+st.sidebar.markdown("<h3>🧠 LLMモデルを選択してください</h3>", unsafe_allow_html=True)
+model = st.sidebar.radio("モデルを選択してください", ("ChatGPT", "Gemini"))
 
 display_riddle()
 
+
 def reload_riddle():
     st.session_state.riddle_data = fetch_random_riddle()
-
+    st.session_state.reasoning = ""
     st.session_state.hint_history = []
 
-with st.form(key='user_resp', border = False ,clear_on_submit=True):
+
+with st.form(key="user_resp", border=False, clear_on_submit=True):
     col1, col2, col3 = st.columns(3)
-    
+
     with col1:
-        user_answer = st.text_input("あなた： ", "", placeholder="ここに入力してください...!")
-    
+        user_answer = st.text_input(
+            "あなた： ", "", placeholder="ここに入力してください...!"
+        )
+
     with col2:
         send_button = st.form_submit_button(label="送信")
-        
+
     with col3:
         next_riddle = st.form_submit_button(label="次の謎")
 
@@ -120,36 +143,68 @@ if send_button and user_answer:
     # Add user input to chat history
 
     st.session_state.riddle_data["user_answer"] = user_answer
-
+    if len(user_answer.strip()) > 0:
     # Choose the LLM model
-    if model == 'ChatGPT':
-        response = judge_openai_chain(answer_checking_prompt_openai, st.session_state.riddle_data)
+        if model == "ChatGPT":
+            response = judge_openai_chain(
+                answer_checking_prompt_openai, st.session_state.riddle_data
+            )
+        else:
+            response = judge_gemini_chain(
+                answer_checking_prompt_gemini, st.session_state.riddle_data
+            )
     else:
-        response = judge_gemini_chain(answer_checking_prompt_gemini, st.session_state.riddle_data)
-
-    result = response['result']
-    reasoning = response['reasoning']
+             response = {
+                "result":"Incorrect",
+                "reasoning":"ユーザーの答は空欄です。ユーザーは問題の意図を理解することが出来ず、何も答えることが出来ませんでした。そのためこの答えは間違ってます"
+                }
+       
+    hint = ""
+    result = response["result"]
+    reasoning = response["reasoning"]
+    st.session_state.reasoning = reasoning
+    turn = min(len(st.session_state.hint_history), 2)
 
     if result.lower() == "correct":
         st.session_state.acount += 1
-        st.success('正解です！', icon="✅")
+        st.success("正解です！", icon="✅")
         st.success("もう一度挑戦するには「次の謎」を押してください！")
         st.balloons()
 
     else:
         st.error("❌ 不正解です。ヒントをお教えします。")
-    
-        if model == 'ChatGPT':
-            hint_response = hint_openai_chain(hint_generation_prompt_openai, st.session_state.riddle_data, st.session_state.hint_history)
+        if model == "ChatGPT":
+            hint = hint_openai_chain(
+                hint_generation_prompt_openai,
+                st.session_state.riddle_data,
+                st.session_state.hint_history,
+                turn,
+                reasoning,
+            )
         else:
-            hint_response = hint_gemini_chain(hint_generation_prompt_gemini, st.session_state.riddle_data, st.session_state.hint_history)
-    
-        hint = hint_response["hint"]
-      
+            hint = hint_gemini_chain(
+                hint_generation_prompt_gemini,
+                st.session_state.riddle_data,
+                st.session_state.hint_history,
+                turn,
+                reasoning,
+            )
+
         st.session_state.hint_history.append(hint)
 
-        st.error(hint_response["hint"])
-
+        st.error(hint)
+        
+    add_data(
+        username = str(st.session_state.username),
+        model = str(model),
+        question = str(st.session_state.riddle_data["question"]),
+        correct_answer = str(st.session_state.riddle_data["correct_answer"]),
+        user_answer = str(user_answer),
+        llm_response = str(result),
+        reasoning =  str(reasoning),
+        llm_hint = str(hint)
+         )
+    
     # Clear the text input box after submission
     st.session_state["text_input"] = ""
 
@@ -179,7 +234,8 @@ st.sidebar.markdown(score_style, unsafe_allow_html=True)
 
 # Display the score
 st.sidebar.markdown("<div class='score-label'>得点：</div>", unsafe_allow_html=True)
-st.sidebar.markdown(f"<div class='score-value'>{a_count} / {q_count}</div>", unsafe_allow_html=True)
-
+st.sidebar.markdown(
+    f"<div class='score-value'>{a_count} / {q_count}</div>", unsafe_allow_html=True
+)
 
 
