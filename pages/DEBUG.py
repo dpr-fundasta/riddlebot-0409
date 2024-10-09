@@ -65,6 +65,11 @@ score_style = """
 """
 
 st.markdown("<div class='score-debug'>DEBUG TERMINAL：</div>", unsafe_allow_html=True)
+
+# Display the 'reasoning' variable if it exists, otherwise handle the error gracefully
+
+
+# Display the other session state variables
 st.write("Database")
 st.write(st.session_state.riddle_data)
 st.write("Reasoning of the judgement")
