@@ -59,6 +59,7 @@ def logout():
     st.session_state.username= ""
     st.session_state.acount = 0
     st.session_state.qcount = 0
+    st.session_state.error = ""
     if 'riddle_data' in st.session_state:
         del st.session_state['riddle_data']
     if 'reasoning' in st.session_state:

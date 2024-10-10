@@ -118,6 +118,7 @@ def reload_riddle():
     st.session_state.riddle_data = fetch_random_riddle()
     st.session_state.reasoning = ""
     st.session_state.hint_history = []
+    st.session_state.error = ""
 
 
 with st.form(key="user_resp", border=False, clear_on_submit=True):
