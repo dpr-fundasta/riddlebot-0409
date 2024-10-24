@@ -1,5 +1,4 @@
 import streamlit as st
-import importlib
 from navigation import make_sidebar, admin_make_sidebar
 # from streamlit_chat import message
 from database.riddleFetch import fetch_random_riddle  # , add_riddle
@@ -15,7 +14,7 @@ from llm.promptTemplates import (
     hint_generation_prompt_openai,
     hint_generation_prompt_gemini,
 )
-import streamlit.components.v1 as components
+
 from database.chat_history import add_data
 from pages.CHECK_LOGIN import check_login
 check_login()
@@ -158,7 +157,7 @@ if send_button and user_answer:
             except Exception as e:
                  response = {
                 "result":"Incorrect",
-                "reasoning":"LLMはこのなぞなぞの結果と推論を生成することができなかった。"
+                "reasoning":"LLMはこのなぞなぞの結果と推論を生成することができなかった。H160"
                 }
     else:
              response = {
@@ -173,13 +172,8 @@ if send_button and user_answer:
     else:
    
         result = "Incorrect"
-        reasoning = "LLMはこのなぞなぞの結果と推論を生成することができなかった。"
-    # try:
-    #     result = response["result"]
-    #     reasoning = response["reasoning"]
-    # except KeyError:
-    #     result = "Incorrect"
-    #     reasoning = "LLMはこのなぞなぞの結果と推論を生成することができなかった。"
+        reasoning = "LLMはこのなぞなぞの結果と推論を生成することができなかった。H170"
+   
     st.session_state.reasoning = reasoning
     turn = min(len(st.session_state.hint_history), 2)
 

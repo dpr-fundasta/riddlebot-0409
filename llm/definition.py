@@ -5,13 +5,6 @@ from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from parser.customJSONParser import JSONParser
 from pydantic import ValidationError
-from llm.promptTemplates import (
-    answer_checking_prompt_gemini,
-    answer_checking_prompt_openai,
-    hint_generation_prompt_gemini,
-    hint_generation_prompt_openai,
-)
-
 from parser.customStrParser import CustomStrOutputParser
 from langchain_core.exceptions import OutputParserException
 from google.api_core.exceptions import InternalServerError
@@ -84,7 +77,7 @@ def create_judge_chain(model_class, model_name, api_key, prompt, variables) -> s
         #     raise KeyError("Missing required keys '結果' and/or '解説' in response")
         return {
             "result": "Incorrect",
-            "reasoning": "LLMはこのなぞなぞの結果と推論を生成することができなかった。",
+            "reasoning": "LLMはこのなぞなぞの結果と推論を生成することができなかった。D80",
         }
 
     except (ValidationError, KeyError, json.JSONDecodeError) as e:
