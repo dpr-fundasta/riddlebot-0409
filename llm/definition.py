@@ -20,7 +20,7 @@ gemini_api_key = st.secrets["gemini"]
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_fixed(3),
-    retry=retry_if_exception_type(InternalServerError) | retry_if_exception_type(OutputParserException),
+    retry=retry_if_exception_type((InternalServerError, OutputParserException))
 )
 def create_judge_chain(model_class, model_name, api_key, prompt, variables) -> str:
 
@@ -77,7 +77,7 @@ def create_judge_chain(model_class, model_name, api_key, prompt, variables) -> s
         #     raise KeyError("Missing required keys '結果' and/or '解説' in response")
         return {
             "result": "Incorrect",
-            "reasoning": "LLMはこのなぞなぞの結果と推論を生成することができなかった。D80",
+            "reasoning": "LLMはこのなぞなぞの結果と推論を生成することができなかった。",
         }
 
     except (ValidationError, KeyError, json.JSONDecodeError) as e:
